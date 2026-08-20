@@ -3,7 +3,7 @@ import sqlite3
 conn = sqlite3.connect("isthixo_orders_practice.db")
 cursor = conn.cursor()
 
-# 1. Create a new customers table
+
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS customers (
         customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
