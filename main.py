@@ -15,7 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-N8N_WEBHOOK_URL = "https://n8n-production-5b5d.up.railway.app/webhook/order-ready"  # confirm this matches your Production URL
+N8N_WEBHOOK_URL = "https://n8n-production-5b5d.up.railway.app/webhook/order-ready"  
 
 
 def notify_n8n(order_id, customer_name, phone_number, order_details, order_date, last_updated, message_type):
@@ -36,6 +36,21 @@ def notify_n8n(order_id, customer_name, phone_number, order_details, order_date,
         print(f"Warning: n8n webhook call failed ({message_type}): {e}")
 
 
+def get_or_create_customer(cursor, name: str, phone: str) -> int:
+    """Looks up a customer by phone number (our natural unique key for a person).
+    If they don't exist yet, creates them. Returns their customer_id either way."""
+    cursor.execute("SELECT customer_id FROM customers WHERE phone = %s", (phone,))
+    existing = cursor.fetchone()
+    if existing:
+        return existing["customer_id"]
+
+    cursor.execute(
+        "INSERT INTO customers (name, phone) VALUES (%s, %s) RETURNING customer_id",
+        (name, phone)
+    )
+    return cursor.fetchone()["customer_id"]
+
+
 class NewOrder(BaseModel):
     order_id: str
     customer_name: str
@@ -48,12 +63,15 @@ def create_order(order: NewOrder):
     conn = get_connection()
     cursor = conn.cursor()
     now = datetime.now().isoformat()
+
+    customer_id = get_or_create_customer(cursor, order.customer_name, order.phone_number)
+
     cursor.execute("""
         INSERT INTO orders
-        (order_id, customer_name, phone_number, order_details, status, notified_status, order_date, last_updated)
-        VALUES (%s, %s, %s, %s, 'Pending', 'Not Notified', %s, %s)
+        (order_id, customer_id, order_details, status, notified_status, order_date, last_updated)
+        VALUES (%s, %s, %s, 'Pending', 'Not Notified', %s, %s)
         ON CONFLICT (order_id) DO NOTHING
-    """, (order.order_id, order.customer_name, order.phone_number, order.order_details, now, now))
+    """, (order.order_id, customer_id, order.order_details, now, now))
     conn.commit()
     conn.close()
 
@@ -66,7 +84,20 @@ def create_order(order: NewOrder):
 def list_orders():
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM orders ORDER BY order_date DESC")
+    cursor.execute("""
+        SELECT
+            o.order_id,
+            c.name AS customer_name,
+            c.phone AS phone_number,
+            o.order_details,
+            o.status,
+            o.notified_status,
+            o.order_date,
+            o.last_updated
+        FROM orders o
+        JOIN customers c ON c.customer_id = o.customer_id
+        ORDER BY o.order_date DESC
+    """)
     rows = cursor.fetchall()
     conn.close()
     return [dict(row) for row in rows]
@@ -79,7 +110,18 @@ def update_status(order_id: str, new_status: str = "Ready"):
     cursor.execute("UPDATE orders SET status = %s WHERE order_id = %s", (new_status, order_id))
     conn.commit()
 
-    cursor.execute("SELECT * FROM orders WHERE order_id = %s", (order_id,))
+    cursor.execute("""
+        SELECT
+            o.order_id,
+            c.name AS customer_name,
+            c.phone AS phone_number,
+            o.order_details,
+            o.order_date,
+            o.last_updated
+        FROM orders o
+        JOIN customers c ON c.customer_id = o.customer_id
+        WHERE o.order_id = %s
+    """, (order_id,))
     order = cursor.fetchone()
     conn.close()
 
