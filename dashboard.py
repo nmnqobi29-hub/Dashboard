@@ -1,7 +1,7 @@
 import streamlit as st
 import requests
 
-API_URL = "http://127.0.0.1:8000"  # change to your Railway URL once deployed
+API_URL = "https://dashboard-production-6b0b.up.railway.app"
 
 st.set_page_config(page_title="Isthixo Orders", layout="wide")
 st.title("Isthixo Order Dashboard")
