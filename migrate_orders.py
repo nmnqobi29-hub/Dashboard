@@ -1,12 +1,3 @@
-"""
-Migrates existing orders from local SQLite (isthixo_orders.db)
-into Railway Postgres.
-
-Run this once, from the same folder as isthixo_orders.db.
-Safe to re-run: uses ON CONFLICT DO NOTHING, so it won't create duplicates
-if some orders were already inserted manually.
-"""
-
 import sqlite3
 from db import get_connection
 

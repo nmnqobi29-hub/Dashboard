@@ -9,9 +9,7 @@ DATABASE_URL = os.environ["DATABASE_URL"]
 conn = psycopg2.connect(DATABASE_URL)
 cursor = conn.cursor()
 
-# ------------------------------------------------------------
-# 1. Create the customers table (PostgreSQL syntax)
-# ------------------------------------------------------------
+
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS customers (
         customer_id SERIAL PRIMARY KEY,
@@ -20,9 +18,7 @@ cursor.execute("""
     )
 """)
 
-# ------------------------------------------------------------
-# 2. Create the orders table, referencing customers
-# ------------------------------------------------------------
+
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS orders (
         order_id TEXT PRIMARY KEY,
@@ -38,9 +34,7 @@ cursor.execute("""
 conn.commit()
 print("Tables created in PostgreSQL.")
 
-# ------------------------------------------------------------
-# 3. Insert a couple of test rows to confirm everything works
-# ------------------------------------------------------------
+
 cursor.execute("""
     INSERT INTO customers (name, phone)
     VALUES (%s, %s)
@@ -61,9 +55,7 @@ cursor.execute("""
 conn.commit()
 print("Test data inserted.")
 
-# ------------------------------------------------------------
-# 4. Run the same JOIN you practiced in SQLite, now on real Postgres
-# ------------------------------------------------------------
+
 cursor.execute("""
     SELECT orders.order_id, customers.name, customers.phone, orders.order_details, orders.status
     FROM orders

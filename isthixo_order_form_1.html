@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Isthixo — Place Your Order</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --clay: #E4D2B4;
+    --charcoal: #221F1C;
+    --terracotta: #B5502E;
+    --terracotta-dark: #963f22;
+    --sage: #5C6B54;
+    --cream: #FBF7F0;
+    --line: rgba(34,31,28,0.12);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--cream);
+    color: var(--charcoal);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 440px;
+  }
+
+  .eyebrow {
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--sage);
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-align: center;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 34px;
+    line-height: 1.15;
+    text-align: center;
+    margin: 0 0 6px;
+    color: var(--charcoal);
+  }
+
+  .sub {
+    text-align: center;
+    color: rgba(34,31,28,0.62);
+    font-size: 15px;
+    margin: 0 0 28px;
+    line-height: 1.5;
+  }
+
+  /* Signature element: order status tracker */
+  .tracker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 0 0 32px;
+    padding: 18px 14px;
+    background: var(--clay);
+    border-radius: 14px;
+  }
+
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .dot {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--cream);
+    border: 2px solid var(--charcoal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .step:first-child .dot {
+    background: var(--terracotta);
+    border-color: var(--terracotta);
+    color: var(--cream);
+  }
+
+  .step-label {
+    font-size: 11px;
+    font-weight: 500;
+    text-align: center;
+    color: rgba(34,31,28,0.7);
+    letter-spacing: 0.01em;
+  }
+
+  .step:first-child .step-label {
+    color: var(--charcoal);
+    font-weight: 600;
+  }
+
+  .connector {
+    flex: 0 0 auto;
+    width: 20px;
+    height: 2px;
+    background: rgba(34,31,28,0.25);
+    margin-top: -18px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 7px;
+    color: var(--charcoal);
+  }
+
+  input, textarea, select {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    color: var(--charcoal);
+    transition: border-color 0.15s ease;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--terracotta);
+  }
+
+  textarea {
+    resize: vertical;
+    min-height: 90px;
+  }
+
+  .hint {
+    font-size: 12.5px;
+    color: rgba(34,31,28,0.5);
+    margin-top: 5px;
+  }
+
+  .radio-group {
+    display: flex;
+    gap: 10px;
+  }
+
+  .radio-option {
+    flex: 1;
+    position: relative;
+  }
+
+  .radio-option input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .radio-option span {
+    display: block;
+    text-align: center;
+    padding: 12px 10px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: rgba(34,31,28,0.6);
+    transition: all 0.15s ease;
+  }
+
+  .radio-option input:checked + span {
+    border-color: var(--terracotta);
+    background: rgba(181,80,46,0.06);
+    color: var(--terracotta-dark);
+    font-weight: 600;
+  }
+
+  button[type="submit"] {
+    margin-top: 8px;
+    padding: 15px;
+    background: var(--terracotta);
+    color: var(--cream);
+    border: none;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  button[type="submit"]:hover {
+    background: var(--terracotta-dark);
+  }
+
+  button[type="submit"]:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .footnote {
+    text-align: center;
+    font-size: 12.5px;
+    color: rgba(34,31,28,0.45);
+    margin-top: 20px;
+    line-height: 1.5;
+  }
+
+  /* Success state */
+  .success {
+    display: none;
+    text-align: center;
+    padding: 20px 4px;
+  }
+
+  .success.show { display: block; }
+  form.hide { display: none; }
+  .tracker.hide { display: none; }
+
+  .success .dot-big {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--sage);
+    color: var(--cream);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    margin: 0 auto 18px;
+  }
+
+  .success h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 24px;
+    margin: 0 0 8px;
+  }
+
+  .success p {
+    color: rgba(34,31,28,0.62);
+    font-size: 14.5px;
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .error-msg {
+    display: none;
+    background: #fbeae5;
+    border: 1px solid rgba(181,80,46,0.3);
+    color: var(--terracotta-dark);
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    margin-top: -4px;
+  }
+
+  .error-msg.show { display: block; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="eyebrow">Isthixo</div>
+  <h1>Place your order</h1>
+  <p class="sub">Fill this in and we'll text you the moment it's received — no need to call or message us to check.</p>
+
+  <div class="tracker" id="tracker">
+    <div class="step">
+      <div class="dot">1</div>
+      <div class="step-label">Received</div>
+    </div>
+    <div class="connector"></div>
+    <div class="step">
+      <div class="dot">2</div>
+      <div class="step-label">Preparing</div>
+    </div>
+    <div class="connector"></div>
+    <div class="step">
+      <div class="dot">3</div>
+      <div class="step-label">Ready</div>
+    </div>
+  </div>
+
+  <form id="orderForm">
+    <div>
+      <label for="name">Your name</label>
+      <input type="text" id="name" name="name" placeholder="e.g. Thandiwe Mokoena" required />
+    </div>
+
+    <div>
+      <label for="phone">Phone number</label>
+      <input type="tel" id="phone" name="phone" placeholder="e.g. 082 123 4567" required />
+      <div class="hint">We'll send order updates to this number via SMS.</div>
+    </div>
+
+    <div>
+      <label for="details">What would you like to order?</label>
+      <textarea id="details" name="details" placeholder="e.g. 2x Blue hoodie (Medium), 1x Black cap" required></textarea>
+    </div>
+
+    <div>
+      <label>Pickup or delivery?</label>
+      <div class="radio-group">
+        <label class="radio-option">
+          <input type="radio" name="fulfillment" value="Pickup" checked />
+          <span>Pickup</span>
+        </label>
+        <label class="radio-option">
+          <input type="radio" name="fulfillment" value="Delivery" />
+          <span>Delivery</span>
+        </label>
+      </div>
+    </div>
+
+    <div>
+      <label for="notes">Anything else we should know? <span style="font-weight:400;color:rgba(34,31,28,0.45);">(optional)</span></label>
+      <textarea id="notes" name="notes" placeholder="e.g. delivery address, size preferences"></textarea>
+    </div>
+
+    <div class="error-msg" id="errorMsg">Something went wrong sending your order. Please try again, or message us directly.</div>
+
+    <button type="submit" id="submitBtn">Send order</button>
+
+    <div class="footnote">By submitting, you agree to be contacted about this order via SMS.</div>
+  </form>
+
+  <div class="success" id="successState">
+    <div class="dot-big">✓</div>
+    <h2>Order sent!</h2>
+    <p>Thanks — we've got it. You'll get an SMS shortly confirming we're preparing it, and another once it's ready.</p>
+  </div>
+
+</div>
+
+<script>
+  const form = document.getElementById('orderForm');
+  const tracker = document.getElementById('tracker');
+  const successState = document.getElementById('successState');
+  const submitBtn = document.getElementById('submitBtn');
+  const errorMsg = document.getElementById('errorMsg');
+
+  
+  const API_URL = 'https://dashboard-production-6b0b.up.railway.app/orders';
+
+  function generateOrderId() {
+    const now = new Date();
+    const pad = (n) => n.toString().padStart(2, '0');
+    return (
+      now.getFullYear().toString() +
+      pad(now.getMonth() + 1) +
+      pad(now.getDate()) +
+      pad(now.getHours()) +
+      pad(now.getMinutes()) +
+      pad(now.getSeconds())
+    );
+  }
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    errorMsg.classList.remove('show');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Sending...';
+
+    const fulfillment = form.querySelector('input[name="fulfillment"]:checked').value;
+    const notes = document.getElementById('notes').value.trim();
+    const details = document.getElementById('details').value.trim();
+
+    let orderDetails = `${details} (${fulfillment})`;
+    if (notes) orderDetails += ` — Notes: ${notes}`;
+
+    const payload = {
+      order_id: generateOrderId(),
+      customer_name: document.getElementById('name').value.trim(),
+      phone_number: document.getElementById('phone').value.trim(),
+      order_details: orderDetails
+    };
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error('Request failed');
+
+      form.classList.add('hide');
+      tracker.classList.add('hide');
+      successState.classList.add('show');
+
+    } catch (err) {
+      errorMsg.classList.add('show');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Send order';
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -18,7 +18,7 @@ else:
         col2.write(order["order_details"])
         col3.write(f"Status: {order['status']}")
 
-        # Status column: show "Mark Ready" button unless already Ready
+       
         if order["status"] != "Ready":
             if col4.button("Mark Ready", key=f"ready_{order['order_id']}"):
                 requests.patch(f"{API_URL}/orders/{order['order_id']}/status", params={"new_status": "Ready"})
@@ -26,8 +26,7 @@ else:
         else:
             col4.write(" Ready")
 
-        # Delete column: always available, regardless of status (Pending or Ready)
-        # Useful for removing duplicate or accidental orders
+       
         if col5.button("Delete", key=f"delete_{order['order_id']}"):
             requests.delete(f"{API_URL}/orders/{order['order_id']}")
             st.rerun()
