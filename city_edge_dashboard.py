@@ -9,9 +9,6 @@ st.set_page_config(page_title="City Edge — Residents", layout="wide")
 st.title("City Edge Resident Dashboard")
 
 
-# ---------------------------------------------------------------------------
-# Add new resident
-# ---------------------------------------------------------------------------
 
 with st.expander("Add new resident", icon="➕"):
     with st.form("add_resident_form", clear_on_submit=True):
@@ -62,9 +59,6 @@ with st.expander("Add new resident", icon="➕"):
                     st.error(f"Could not add resident: {e}")
 
 
-# ---------------------------------------------------------------------------
-# Fetch data (with filters applied server-side)
-# ---------------------------------------------------------------------------
 
 def fetch_residents(filters: dict):
     params = {k: v for k, v in filters.items() if v}
@@ -80,9 +74,6 @@ def fetch_residents(filters: dict):
         st.stop()
 
 
-# ---------------------------------------------------------------------------
-# Filter bar
-# ---------------------------------------------------------------------------
 
 with st.container():
     col1, col2, col3, col4 = st.columns(4)
@@ -119,9 +110,6 @@ if not residents:
 df = pd.DataFrame(residents)
 
 
-# ---------------------------------------------------------------------------
-# Download buttons
-# ---------------------------------------------------------------------------
 
 dl_col1, dl_col2, _ = st.columns([1, 1, 4])
 
@@ -142,9 +130,6 @@ dl_col2.download_button(
 st.divider()
 
 
-# ---------------------------------------------------------------------------
-# Editable table
-# ---------------------------------------------------------------------------
 
 st.subheader("Residents")
 st.caption("Edit any cell, then click 'Save changes' to update the database.")
