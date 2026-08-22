@@ -17,7 +17,7 @@ try:
         VALUES (?, ?, ?, ?, ?, ?)
     """, ("TXN001", new_customer_id, "1 Denim Jacket", "Pending", "2026-08-11", "2026-08-11"))
 
-    # Deliberately cause an error to prove rollback works
+   
     cursor.execute("INSERT INTO nonexistent_table VALUES (1)")
 
     conn.commit()
