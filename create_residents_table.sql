@@ -1,13 +1,12 @@
--- Run this in Railway's Postgres Console (or pgAdmin connected to Railway)
--- Creates the residents table for City Edge student data
+
 
 CREATE TABLE IF NOT EXISTS residents (
-    id SERIAL PRIMARY KEY,             -- surrogate key, since student_number has a known duplicate
-    student_number BIGINT NOT NULL,    -- not UNIQUE yet -- one duplicate exists, pending confirmation
+    id SERIAL PRIMARY KEY,             
+    student_number BIGINT NOT NULL,    
     student_name TEXT NOT NULL,
     room_number TEXT NOT NULL,
-    academic_year TEXT NOT NULL,       -- e.g. '1st Year', 'Postgraduate', 'Advanced Diploma'
-    lease_status TEXT NOT NULL,        -- 'Renewed', 'Expired', 'Unknown'
+    academic_year TEXT NOT NULL,       
+    lease_status TEXT NOT NULL,        
     created_at TIMESTAMP DEFAULT NOW()
 );
 
