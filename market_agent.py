@@ -44,8 +44,8 @@ def fetch_recent_news(query, max_age_days=1, max_results=5):
     try:
         response = tavily.search(
             query=query,
-            topic="news",          # news-specific index, includes published_date
-            days=max_age_days,     # Tavily's own recency filter
+            topic="news",         
+            days=max_age_days,    
             search_depth="advanced",
             max_results=max_results,
         )
@@ -82,7 +82,6 @@ def fetch_recent_news(query, max_age_days=1, max_results=5):
     parsed.sort(key=lambda item: item["published_date"] or datetime.min.date(), reverse=True)
     return parsed
 
-
 def save_insights_to_db(sector, search_query, insights):
     if not insights:
         return 0
@@ -101,7 +100,6 @@ def save_insights_to_db(sector, search_query, insights):
     conn.commit()
     conn.close()
     return saved
-
 
 def save_predictions_to_db(ml_results):
     conn = get_connection()
