@@ -162,3 +162,74 @@ def delete_order(order_id: str):
     conn.close()
 
     return {"message": f"Order {order_id} deleted"}
+
+
+
+
+class ResidentUpdate(BaseModel):
+    student_name: str | None = None
+    room_number: str | None = None
+    academic_year: str | None = None
+    lease_status: str | None = None
+
+
+@app.get("/residents")
+def list_residents(
+    lease_status: str | None = None,
+    academic_year: str | None = None,
+    room_number: str | None = None,
+    search: str | None = None,
+):
+    """Returns residents, optionally filtered. `search` matches against
+    student name or student number (partial match)."""
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    query = "SELECT * FROM residents WHERE 1=1"
+    params = []
+
+    if lease_status:
+        query += " AND lease_status = %s"
+        params.append(lease_status)
+    if academic_year:
+        query += " AND academic_year = %s"
+        params.append(academic_year)
+    if room_number:
+        query += " AND room_number = %s"
+        params.append(room_number)
+    if search:
+        query += " AND (student_name ILIKE %s OR CAST(student_number AS TEXT) ILIKE %s)"
+        like_term = f"%{search}%"
+        params.extend([like_term, like_term])
+
+    query += " ORDER BY room_number"
+
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+
+@app.patch("/residents/{resident_id}")
+def update_resident(resident_id: int, update: ResidentUpdate):
+    fields = {k: v for k, v in update.dict().items() if v is not None}
+    if not fields:
+        raise HTTPException(status_code=400, detail="No fields provided to update")
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    set_clause = ", ".join(f"{col} = %s" for col in fields.keys())
+    values = list(fields.values()) + [resident_id]
+
+    cursor.execute(f"UPDATE residents SET {set_clause} WHERE id = %s", values)
+    conn.commit()
+
+    cursor.execute("SELECT * FROM residents WHERE id = %s", (resident_id,))
+    resident = cursor.fetchone()
+    conn.close()
+
+    if resident is None:
+        raise HTTPException(status_code=404, detail="Resident not found")
+
+    return dict(resident)
