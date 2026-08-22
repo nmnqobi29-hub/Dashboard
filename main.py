@@ -280,9 +280,6 @@ def update_resident(resident_id: int, update: ResidentUpdate):
     return dict(resident)
 
 
-# ---------------------------------------------------------------------------
-# Market Intelligence — read endpoints
-# ---------------------------------------------------------------------------
 
 @app.get("/market/insights")
 def list_market_insights(sector: str | None = None, days: int | None = None):
