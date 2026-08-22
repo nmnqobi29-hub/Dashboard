@@ -3,13 +3,68 @@ import requests
 import pandas as pd
 import io
 
-API_URL = "https://dashboard-production-6b0b.up.railway.app"  
+API_URL = "https://dashboard-production-6b0b.up.railway.app"  # same deployed API as Isthixo
 
 st.set_page_config(page_title="City Edge — Residents", layout="wide")
 st.title("City Edge Resident Dashboard")
 
 
+# ---------------------------------------------------------------------------
+# Add new resident
+# ---------------------------------------------------------------------------
 
+with st.expander("Add new resident", icon="➕"):
+    with st.form("add_resident_form", clear_on_submit=True):
+        new_col1, new_col2 = st.columns(2)
+
+        new_student_number = new_col1.text_input("Student number")
+        new_student_name = new_col2.text_input("Student name")
+
+        new_room_number = new_col1.text_input("Room number")
+        new_academic_year = new_col2.selectbox(
+            "Academic year",
+            ["1st Year", "2nd Year", "3rd Year", "Advanced Diploma", "Postgraduate"],
+        )
+
+        new_lease_status = st.selectbox(
+            "Lease status", ["Renewed", "Expired", "Unknown"]
+        )
+
+        submitted = st.form_submit_button("Add resident")
+
+        if submitted:
+            if not new_student_number or not new_student_name or not new_room_number:
+                st.error("Student number, name, and room number are all required.")
+            elif not new_student_number.isdigit():
+                st.error("Student number must be numeric.")
+            else:
+                try:
+                    resp = requests.post(
+                        f"{API_URL}/residents",
+                        json={
+                            "student_number": int(new_student_number),
+                            "student_name": new_student_name,
+                            "room_number": new_room_number,
+                            "academic_year": new_academic_year,
+                            "lease_status": new_lease_status,
+                        },
+                        timeout=10,
+                    )
+                    resp.raise_for_status()
+                    st.success(f"Added {new_student_name} to room {new_room_number}.")
+                    st.rerun()
+                except requests.HTTPError as e:
+                    if e.response is not None and e.response.status_code == 409:
+                        st.error(e.response.json().get("detail", "This student number already exists."))
+                    else:
+                        st.error(f"Could not add resident: {e}")
+                except requests.RequestException as e:
+                    st.error(f"Could not add resident: {e}")
+
+
+# ---------------------------------------------------------------------------
+# Fetch data (with filters applied server-side)
+# ---------------------------------------------------------------------------
 
 def fetch_residents(filters: dict):
     params = {k: v for k, v in filters.items() if v}
@@ -25,6 +80,9 @@ def fetch_residents(filters: dict):
         st.stop()
 
 
+# ---------------------------------------------------------------------------
+# Filter bar
+# ---------------------------------------------------------------------------
 
 with st.container():
     col1, col2, col3, col4 = st.columns(4)
@@ -61,7 +119,9 @@ if not residents:
 df = pd.DataFrame(residents)
 
 
-
+# ---------------------------------------------------------------------------
+# Download buttons
+# ---------------------------------------------------------------------------
 
 dl_col1, dl_col2, _ = st.columns([1, 1, 4])
 
@@ -82,6 +142,9 @@ dl_col2.download_button(
 st.divider()
 
 
+# ---------------------------------------------------------------------------
+# Editable table
+# ---------------------------------------------------------------------------
 
 st.subheader("Residents")
 st.caption("Edit any cell, then click 'Save changes' to update the database.")

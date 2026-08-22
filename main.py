@@ -15,7 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-N8N_WEBHOOK_URL = "https://n8n-production-5b5d.up.railway.app/webhook/order-ready"  
+N8N_WEBHOOK_URL = "https://n8n-production-5b5d.up.railway.app/webhook/order-ready"  # confirm this matches your Production URL
 
 
 def notify_n8n(order_id, customer_name, phone_number, order_details, order_date, last_updated, message_type):
@@ -164,13 +164,58 @@ def delete_order(order_id: str):
     return {"message": f"Order {order_id} deleted"}
 
 
-
+# ---------------------------------------------------------------------------
+# City Edge — residents endpoints
+# ---------------------------------------------------------------------------
 
 class ResidentUpdate(BaseModel):
     student_name: str | None = None
     room_number: str | None = None
     academic_year: str | None = None
     lease_status: str | None = None
+
+
+class NewResident(BaseModel):
+    student_number: int
+    student_name: str
+    room_number: str
+    academic_year: str
+    lease_status: str = "Unknown"
+
+
+@app.post("/residents")
+def create_resident(resident: NewResident):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT id FROM residents WHERE student_number = %s", (resident.student_number,)
+    )
+    existing = cursor.fetchone()
+    if existing:
+        conn.close()
+        raise HTTPException(
+            status_code=409,
+            detail=f"Student number {resident.student_number} already exists (resident id {existing['id']})."
+        )
+
+    cursor.execute("""
+        INSERT INTO residents
+        (student_number, student_name, room_number, academic_year, lease_status)
+        VALUES (%s, %s, %s, %s, %s)
+        RETURNING *
+    """, (
+        resident.student_number,
+        resident.student_name,
+        resident.room_number,
+        resident.academic_year,
+        resident.lease_status,
+    ))
+    new_row = cursor.fetchone()
+    conn.commit()
+    conn.close()
+
+    return dict(new_row)
 
 
 @app.get("/residents")
