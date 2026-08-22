@@ -15,7 +15,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-N8N_WEBHOOK_URL = "https://n8n-production-5b5d.up.railway.app/webhook/order-ready"  # confirm this matches your Production URL
+N8N_WEBHOOK_URL = "https://n8n-production-5b5d.up.railway.app/webhook/order-ready"  
 
 
 def notify_n8n(order_id, customer_name, phone_number, order_details, order_date, last_updated, message_type):
@@ -34,8 +34,7 @@ def notify_n8n(order_id, customer_name, phone_number, order_details, order_date,
         }, timeout=5)
     except requests.RequestException as e:
         print(f"Warning: n8n webhook call failed ({message_type}): {e}")
-
-
+        
 def get_or_create_customer(cursor, name: str, phone: str) -> int:
     """Looks up a customer by phone number (our natural unique key for a person).
     If they don't exist yet, creates them. Returns their customer_id either way."""
@@ -50,13 +49,11 @@ def get_or_create_customer(cursor, name: str, phone: str) -> int:
     )
     return cursor.fetchone()["customer_id"]
 
-
 class NewOrder(BaseModel):
     order_id: str
     customer_name: str
     phone_number: str
     order_details: str
-
 
 @app.post("/orders")
 def create_order(order: NewOrder):
@@ -79,7 +76,6 @@ def create_order(order: NewOrder):
 
     return {"message": "Order created", "order_id": order.order_id}
 
-
 @app.get("/orders")
 def list_orders():
     conn = get_connection()
@@ -101,7 +97,6 @@ def list_orders():
     rows = cursor.fetchall()
     conn.close()
     return [dict(row) for row in rows]
-
 
 @app.patch("/orders/{order_id}/status")
 def update_status(order_id: str, new_status: str = "Ready"):
@@ -128,7 +123,6 @@ def update_status(order_id: str, new_status: str = "Ready"):
     if order is None:
         raise HTTPException(status_code=404, detail="Order not found")
 
-    # Fire the "order ready" confirmation SMS
     notify_n8n(
         order["order_id"], order["customer_name"], order["phone_number"],
         order["order_details"], order["order_date"], order["last_updated"],
@@ -143,7 +137,6 @@ def update_status(order_id: str, new_status: str = "Ready"):
     conn.close()
 
     return {"message": f"Order {order_id} marked as {new_status}"}
-
 
 @app.delete("/orders/{order_id}")
 def delete_order(order_id: str):
@@ -164,10 +157,6 @@ def delete_order(order_id: str):
     return {"message": f"Order {order_id} deleted"}
 
 
-# ---------------------------------------------------------------------------
-# City Edge — residents endpoints
-# ---------------------------------------------------------------------------
-
 class ResidentUpdate(BaseModel):
     student_name: str | None = None
     room_number: str | None = None
@@ -181,7 +170,6 @@ class NewResident(BaseModel):
     room_number: str
     academic_year: str
     lease_status: str = "Unknown"
-
 
 @app.post("/residents")
 def create_resident(resident: NewResident):
@@ -216,7 +204,6 @@ def create_resident(resident: NewResident):
     conn.close()
 
     return dict(new_row)
-
 
 @app.get("/residents")
 def list_residents(
@@ -278,8 +265,6 @@ def update_resident(resident_id: int, update: ResidentUpdate):
         raise HTTPException(status_code=404, detail="Resident not found")
 
     return dict(resident)
-
-
 
 @app.get("/market/insights")
 def list_market_insights(sector: str | None = None, days: int | None = None):
