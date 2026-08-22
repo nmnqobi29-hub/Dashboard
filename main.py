@@ -278,3 +278,52 @@ def update_resident(resident_id: int, update: ResidentUpdate):
         raise HTTPException(status_code=404, detail="Resident not found")
 
     return dict(resident)
+
+
+# ---------------------------------------------------------------------------
+# Market Intelligence — read endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/market/insights")
+def list_market_insights(sector: str | None = None, days: int | None = None):
+    """Returns saved news insights, most recent first.
+    `days` optionally limits to insights scraped in the last N days."""
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    query = "SELECT * FROM market_insights WHERE 1=1"
+    params = []
+
+    if sector:
+        query += " AND sector = %s"
+        params.append(sector)
+    if days:
+        query += " AND scraped_at >= NOW() - INTERVAL '%s days'"
+        params.append(days)
+
+    query += " ORDER BY published_date DESC NULLS LAST, scraped_at DESC"
+
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
+
+
+@app.get("/market/predictions")
+def list_market_predictions(metric_name: str | None = None):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    query = "SELECT * FROM market_predictions WHERE 1=1"
+    params = []
+
+    if metric_name:
+        query += " AND metric_name = %s"
+        params.append(metric_name)
+
+    query += " ORDER BY run_at DESC"
+
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(row) for row in rows]
